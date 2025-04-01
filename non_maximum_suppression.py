@@ -3,7 +3,6 @@ import torch
 
 thresh_iou = 0.0
 
-
 def non_maximum_suppression(P: torch.Tensor, thresh_iou: float):
     # Ensure P is a 2D tensor with shape [N, 5]
     if P.dim() == 1:
@@ -48,6 +47,49 @@ def non_maximum_suppression(P: torch.Tensor, thresh_iou: float):
 
     return torch.stack(keep) if keep else torch.empty((0, 5))
 
+def sort_data(unsorted_dir):
+    txt_files = [f for f in os.listdir(unsorted_dir) if f.endswith(".txt")]
+    #os.makedirs(output_dir, exist_ok=True)
+
+    for txt_file in txt_files:
+        file_path = os.path.join(unsorted_dir, txt_file)
+        output_path = file_path #os.path.join(output_dir, txt_file)
+        try:
+            with open(file_path, "r") as f:
+                box_rows = f.readlines()
+        except FileNotFoundError:
+            print(f"File not found: {file_path}")
+            continue
+        
+        output_lines = []
+        char_boxes = []
+        for row in box_rows:
+            box = list(map(float, row.strip().split()))
+            # Assuming format: class_id x_center y_center width height score
+            class_id, x_center, y_center, width, height, score = box[:]
+
+            new_class = int(class_id)
+
+            char_boxes.append({
+                'class_id': new_class,
+                'bbox': (x_center, y_center, width, height),
+                'score': score
+                })
+
+        char_boxes.sort(key=lambda d: (d['bbox'][1], -d['bbox'][0]))
+        for box in char_boxes:
+            class_id = box['class_id']
+            x_center, y_center, width, height = box['bbox']
+            score = box['score']
+            output_line = (
+                f"{class_id} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f} {score:.6f}"
+            )
+            output_lines.append(output_line)
+
+        # Write to output file
+        with open(output_path, "w") as f_out:
+            f_out.write("\n".join(output_lines))
+        print(f"Created combined file: {output_path}")
 
 def combine_lines(main_folder, output_dir):
     subfolders = [
@@ -134,6 +176,7 @@ def combine_lines(main_folder, output_dir):
 
 
 if __name__ == "__main__":
-    main_folder = "nom-detection-copy"
-    output_dir = "nom-detection-combined-results-0.5-0.25-0.5"
+    main_folder = "nom-detection"
+    output_dir = "nom-detection-0.5-0.25-0.5-unlabeled"
     combine_lines(main_folder, output_dir)
+    sort_data(unsorted_dir=output_dir)
