@@ -91,22 +91,18 @@ def sort_data(unsorted_dir):
             f_out.write("\n".join(output_lines))
         print(f"Created combined file: {output_path}")
 
-def combine_lines(main_folder, output_dir):
-    subfolders = [
-        "yolo10m-1280-tkh-mth-test",
-        "yolo10m-1280-tkh-test",
-        "yolo11n-1280-tkh-test",
-    ]
+def combine_lines(folder_list, weights, output_dir):
+    assert len(folder_list) > 0, "At least one folder must be provided"
     weights = [0.5, 0.25, 0.5]
-    labels_dir = os.path.join(f"{main_folder}/{subfolders[0]}", "labels")
+    labels_dir = os.path.join(folder_list[0], "labels")
     txt_files = [f for f in os.listdir(labels_dir) if f.endswith(".txt")]
 
     os.makedirs(output_dir, exist_ok=True)
 
     for txt_file in txt_files:
         all_boxes = []
-        for subfolder, weight in zip(subfolders, weights):
-            file_path = os.path.join(f"{main_folder}/{subfolder}", "labels", txt_file)
+        for subfolder, weight in zip(folder_list, weights):
+            file_path = os.path.join(subfolder, "labels", txt_file)
             try:
                 with open(file_path, "r") as f:
                     lines = f.read().splitlines()
@@ -176,7 +172,8 @@ def combine_lines(main_folder, output_dir):
 
 
 if __name__ == "__main__":
-    main_folder = "nom-detection"
-    output_dir = "nom-detection-0.5-0.25-0.5-unlabeled"
-    combine_lines(main_folder, output_dir)
+    folder_list = ["nom-detection-gt/yolo10m-1280-tkh-mth", "nom-detection-gt/yolo10m-1280-tkh", "nom-detection-gt/yolo11n-1280-tkh"]
+    weights = [0.5, 0.25, 0.5]
+    output_dir = "nom-detection-gt/merged-0.5-0.25-0.5"
+    combine_lines(folder_list, weights, output_dir)
     sort_data(unsorted_dir=output_dir)
