@@ -1,14 +1,14 @@
 from ultralytics import YOLO
 project = "nom-detection"
-name = "yolo10m-1280p"
+name = "yolo11n-1280-nom-data"
 
 # Load a model
 # model = YOLO("yolov10m.pt")  # load a pretrained model (recommended for training)
-model = YOLO("nom-detection/yolo10m-12803/weights/best.pt")  # load a pretrained model (recommended for training)
+model = YOLO("models/yolo11n-1280-tkh.pt")  # load a pretrained model (recommended for training)
 # model = YOLO("yolo11n.yaml").load("yolo11n.pt")  # build from YAML and transfer weights
 
 # Train the model
-model.train(data="datasets/tkh-mth2k2/tkh-mth2k2.yaml",
+model.train(data="datasets/nom-data.yaml",
             epochs=100,
             imgsz=1280,
             project=project,
@@ -22,5 +22,7 @@ model.train(data="datasets/tkh-mth2k2/tkh-mth2k2.yaml",
             batch=60,
             cache=True,
             plots=False,
-            crop_fraction=0.5,
-            pretrained=True)
+            # crop_fraction=0.5,
+            pretrained=True,
+            deterministic=False,
+            )
