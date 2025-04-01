@@ -91,13 +91,13 @@ def sort_data(unsorted_dir, output_dir):
 import numpy as np
 from PIL import Image
 
-def labeled_files(image_dir, label_dir, box_dir, output_dir):
-    img = np.array(Image.open(image_dir))
+def labeled_files(image_file, line_label_file, box_label_file, output_file):
+    img = np.array(Image.open(image_file))
     img_height, img_width = img.shape[:2]
     
-    with open(label_dir) as folder:
+    with open(line_label_file) as f:
         columns = []
-        for line in folder:
+        for line in f:
             parts = line.strip().split(',')
             chars = parts[8]
 
@@ -119,12 +119,12 @@ def labeled_files(image_dir, label_dir, box_dir, output_dir):
                     })
 
             except ValueError:
-                print(f"Error parsing label: {line} of file {folder}")
+                print(f"Error parsing label: {line} of file {f}")
                 continue
     
-    with open(box_dir) as folder:
+    with open(box_label_file) as f:
         output_lines = []
-        for row in folder:
+        for row in f:
             box = list(map(float, row.strip().split()))
             # Assuming format: class_id x_center y_center width height score
             class_id, x_center, y_center, width, height, score = box[:]
@@ -145,24 +145,22 @@ def labeled_files(image_dir, label_dir, box_dir, output_dir):
                     break
 
         # Write to output file
-        with open(output_dir, "w") as f_out:
+        with open(output_file, "w") as f_out:
             f_out.write("\n".join(output_lines))
-        print(f"Created combined file: {output_dir}")
+        print(f"Created combined file: {output_file}")
 
 if __name__ == "__main__":
     import glob
     import os
     dataset = "datasets/nomnaocr/Pages"
-    nms_data = "nom-detection-0.5-0.25-0.5-unlabeled"
-    img_dir = "datasets/nomnaocr/val"
-    extracted_label = "nom-detection-labels"
-    output_dir = "nom-detection-0.5-0.25-0.5-labeled"
+    nms_data = "nom-detection-gt/merged-0.5-0.25-0.5"
+    output_dir = "nom-detection-gt/labeled-by-textline"
     
-    exported(dataset, nms_data, extracted_label)
+    line_labels_dict = {os.path.basename(txtfile)[:-4]:txtfile for txtfile in glob.glob(f"{dataset}/**/*.txt", recursive=True)}
 
     os.makedirs(output_dir, exist_ok=True)
-    for img in glob.glob("datasets/nomnaocr/val/*.jpg"):
-        labeled_files(img, img.replace(img_dir, extracted_label).replace(".jpg", ".txt"), img.replace(img_dir, nms_data).replace(".jpg", ".txt"), img.replace(img_dir, output_dir).replace(".jpg", ".txt"))
-    
-    strict_data = "nom-detection/strict-nms-adaptive-textline-results/labels"
-    strict_sorted_data = "nom-detection-strict-nms-labeled"
+    for img in glob.glob(f"{dataset}/**/*.jpg", recursive=True):
+        id = os.path.basename(img)[:-4]
+        labeled_files(img, line_labels_dict[id], f"{nms_data}/{id}.txt", f"{output_dir}/{id}.txt")
+    # strict_data = "nom-detection/strict-nms-adaptive-textline-results/labels"
+    # strict_sorted_data = "nom-detection-strict-nms-labeled"
