@@ -20,20 +20,28 @@ pipeline described in `CLAUDE.md`, just on a small enough dataset to finish in o
 
 ## 0. Setup
 
+This lab uses [uv](https://docs.astral.sh/uv/) to manage the Python environment. Install it
+if you don't have it yet (`curl -LsSf https://astral.sh/uv/install.sh | sh`), then create a
+virtual environment in the repo and install the dependencies:
+
 ```bash
-pip install ultralytics imagesize tqdm pillow matplotlib
+uv venv
+uv pip install ultralytics imagesize tqdm pillow matplotlib
 ```
+
+Either activate the environment (`source .venv/bin/activate`) or prefix every command in
+this lab with `uv run` (e.g. `uv run python train.py`) — the two are equivalent.
 
 Sanity-check the install:
 
 ```bash
-python -c "from ultralytics import YOLO; print('ok')"
+uv run python -c "from ultralytics import YOLO; print('ok')"
 ```
 
 > **If you see `ImportError: libGL.so.1: cannot open shared object file`**, your system is
 > missing the OpenGL library that `opencv-python` needs. Install it with
-> `sudo apt-get install libgl1`, or `pip install opencv-python-headless` instead of
-> `opencv-python`.
+> `sudo apt-get install libgl1`, or swap in the headless build:
+> `uv pip uninstall opencv-python && uv pip install opencv-python-headless`.
 
 The lab dataset is a small slice of Nom page scans with character-level bounding boxes,
 available on the shared drive:
@@ -464,7 +472,7 @@ output dict:
 ### 6.3 Run the repo's evaluator
 
 ```bash
-python evaluate_detection_yolo.py \
+uv run python evaluate_detection_yolo.py \
   --gt_dir datasets/lab-char-detect/labels/val \
   --pred_dir lab-runs/predict_labels/labels \
   --iou_thres 0.5
