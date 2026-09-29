@@ -27,7 +27,15 @@ virtual environment in the repo and install the dependencies:
 ```bash
 uv venv
 uv pip install ultralytics imagesize tqdm pillow matplotlib
+
+# Ultralytics pulls in opencv-python, which needs the system OpenGL lib (libGL.so.1).
+# Swap it for the headless build so `import cv2` works on machines without it.
+uv pip uninstall opencv-python
+uv pip install opencv-python-headless
 ```
+
+The headless build can't open GUI windows, which is fine here — every script in this lab
+saves images to disk instead.
 
 Either activate the environment (`source .venv/bin/activate`) or prefix every command in
 this lab with `uv run` (e.g. `uv run python train.py`) — the two are equivalent.
@@ -35,13 +43,14 @@ this lab with `uv run` (e.g. `uv run python train.py`) — the two are equivalen
 Sanity-check the install:
 
 ```bash
-uv run python -c "from ultralytics import YOLO; print('ok')"
+uv run python -c "import cv2; from ultralytics import YOLO; print('ok')"
 ```
 
-> **If you see `ImportError: libGL.so.1: cannot open shared object file`**, your system is
-> missing the OpenGL library that `opencv-python` needs. Install it with
-> `sudo apt-get install libgl1`, or swap in the headless build:
-> `uv pip uninstall opencv-python && uv pip install opencv-python-headless`.
+> **If you see `ImportError: libGL.so.1: cannot open shared object file`**, the full
+> `opencv-python` package is still installed (or got reinstalled). Re-run the swap above:
+> `uv pip uninstall opencv-python && uv pip install opencv-python-headless`. Installing
+> anything that depends on `opencv-python` afterwards can bring it back, so repeat the swap
+> if the error returns.
 
 The lab dataset is a small slice of Nom page scans with character-level bounding boxes,
 available on the shared drive:
