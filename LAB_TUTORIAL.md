@@ -29,13 +29,13 @@ The shared datasets are linked once under `~/datasets`, and the repository's `da
 symlink makes the paths used by the scripts resolve to that shared location.
 
 ```bash
-mkdir -p /data/projectgX "$HOME/workspace"
-git clone https://github.com/ntcuong2103/nom-ocr-project.git \
-  /data/projectgX/nom-ocr-project
-ln -s /data/projectgX/nom-ocr-project "$HOME/workspace/nom-ocr-project"
-ln -s /data/shared/project2026 "$HOME/datasets"
-ln -s "$HOME/datasets" /data/projectgX/nom-ocr-project/datasets
-cd "$HOME/workspace/nom-ocr-project"
+cd
+ln -s /data/projectgX workspace
+ln -s /data/shared/project2026 datasets
+cd workspace
+git clone https://github.com/ntcuong2103/nom-ocr-project.git
+cd nom-ocr-project
+ln -s ~/datasets datasets
 ```
 
 If any of these symlinks already exist, keep the existing link rather than replacing it.
